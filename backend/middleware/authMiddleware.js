@@ -1,8 +1,9 @@
 const jwt = require('jsonwebtoken');
-const User = require('../models/User');
+const { db } = require('../config/firebase');
+const { doc, getDoc } = require('firebase/firestore');
 
 /**
- * Middleware: Verify JWT token and attach user to request
+ * Middleware: Verify JWT token and attach user to request (Firebase version)
  */
 const authMiddleware = async (req, res, next) => {
   try {
@@ -20,12 +21,15 @@ const authMiddleware = async (req, res, next) => {
     // Verify token
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    // Fetch user from database (exclude password)
-    const user = await User.findById(decoded.id).select('-password');
+    // Fetch user from Firestore
+    const userDoc = await getDoc(doc(db, 'users', decoded.id));
 
-    if (!user) {
+    if (!userDoc.exists()) {
       return res.status(401).json({ success: false, message: 'Token is invalid. User not found.' });
     }
+
+    const user = { _id: userDoc.id, ...userDoc.data() };
+    delete user.password;
 
     if (!user.isActive) {
       return res.status(401).json({ success: false, message: 'Account is deactivated.' });

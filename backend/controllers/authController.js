@@ -1,104 +1,98 @@
-const User = require('../models/User');
-const PatientProfile = require('../models/PatientProfile');
-const { generateToken, maskAadhaar, encryptAadhaar, logActivity } = require('../utils/helpers');
+const { db } = require('../config/firebase');
+const { collection, query, where, getDocs, addDoc } = require('firebase/firestore');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 
 /**
- * @route   POST /api/auth/register/patient
- * @desc    Register a new patient
+ * @route   POST /api/auth/register
+ * @desc    Register a new user (default role: patient)
  * @access  Public
  */
-const registerPatient = async (req, res) => {
+const register = async (req, res) => {
   try {
-    const {
-      name, email, password, mobileNumber, emergencyContact,
-      bloodGroup, medicalHistory, aadhaarNumber, address,
-      dateOfBirth, gender,
-    } = req.body;
+    const { name, email, password, role } = req.body;
 
-    // Check if email already exists
-    const existingUser = await User.findOne({ email });
-    if (existingUser) {
-      return res.status(409).json({ success: false, message: 'Email already registered.' });
+    // Check if user already exists
+    const usersRef = collection(db, 'users');
+    const q = query(usersRef, where('email', '==', email.toLowerCase()));
+    const querySnapshot = await getDocs(q);
+
+    if (!querySnapshot.empty) {
+      return res.status(400).json({ success: false, message: 'User already exists with this email' });
     }
 
-    // Create user account
-    const user = await User.create({ name, email, password, role: 'patient' });
+    // Hash password
+    const salt = await bcrypt.genSalt(12);
+    const hashedPassword = await bcrypt.hash(password, salt);
 
-    // Create patient profile
-    const aadhaarMasked = aadhaarNumber ? maskAadhaar(aadhaarNumber) : undefined;
-    const aadhaarEncrypted = aadhaarNumber ? encryptAadhaar(aadhaarNumber) : undefined;
+    // Create user in Firestore
+    const newUser = {
+      name,
+      email: email.toLowerCase(),
+      password: hashedPassword,
+      role: role || 'patient',
+      isActive: true,
+      createdAt: new Date().toISOString(),
+    };
 
-    await PatientProfile.create({
-      userId: user._id,
-      mobileNumber,
-      emergencyContact,
-      bloodGroup,
-      medicalHistory: medicalHistory || [],
-      aadhaarMasked,
-      aadhaarEncrypted,
-      address,
-      dateOfBirth,
-      gender,
+    const docRef = await addDoc(usersRef, newUser);
+    const user = { _id: docRef.id, ...newUser };
+    delete user.password;
+
+    // Create JWT
+    const token = jwt.sign({ id: docRef.id, role: user.role }, process.env.JWT_SECRET, {
+      expiresIn: process.env.JWT_EXPIRE || '7d',
     });
-
-    await logActivity(user._id, 'PATIENT_REGISTERED', `New patient registered: ${name}`, 'patient');
-
-    const token = generateToken(user._id, user.role);
 
     res.status(201).json({
       success: true,
-      message: 'Patient registered successfully.',
-      data: {
-        token,
-        user: { _id: user._id, name: user.name, email: user.email, role: user.role },
-      },
+      message: 'User registered successfully',
+      data: { token, user },
     });
   } catch (error) {
-    console.error('Register Patient Error:', error);
+    console.error('Registration Error:', error);
     res.status(500).json({ success: false, message: error.message });
   }
 };
 
 /**
  * @route   POST /api/auth/login
- * @desc    Login for any role (patient, hospital, admin)
+ * @desc    Authenticate user & get token
  * @access  Public
  */
 const login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    // Find user with password included
-    const user = await User.findOne({ email }).select('+password');
-    if (!user) {
-      return res.status(401).json({ success: false, message: 'Invalid email or password.' });
+    // Find user by email
+    const usersRef = collection(db, 'users');
+    const q = query(usersRef, where('email', '==', email.toLowerCase()));
+    const querySnapshot = await getDocs(q);
+
+    if (querySnapshot.empty) {
+      return res.status(401).json({ success: false, message: 'Invalid credentials' });
     }
 
-    if (!user.isActive) {
-      return res.status(401).json({ success: false, message: 'Account is deactivated. Contact admin.' });
-    }
+    const userDoc = querySnapshot.docs[0];
+    const user = { _id: userDoc.id, ...userDoc.data() };
 
-    // Compare passwords
-    const isMatch = await user.comparePassword(password);
+    // Check password
+    const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
-      return res.status(401).json({ success: false, message: 'Invalid email or password.' });
+      return res.status(401).json({ success: false, message: 'Invalid credentials' });
     }
 
-    // Update last login
-    user.lastLogin = new Date();
-    await user.save({ validateBeforeSave: false });
+    delete user.password;
 
-    await logActivity(user._id, 'USER_LOGIN', `User logged in: ${user.email}`, user.role);
-
-    const token = generateToken(user._id, user.role);
+    // Create JWT
+    const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, {
+      expiresIn: process.env.JWT_EXPIRE || '7d',
+    });
 
     res.json({
       success: true,
-      message: 'Login successful.',
-      data: {
-        token,
-        user: { _id: user._id, name: user.name, email: user.email, role: user.role },
-      },
+      message: 'Logged in successfully',
+      data: { token, user },
     });
   } catch (error) {
     console.error('Login Error:', error);
@@ -108,19 +102,16 @@ const login = async (req, res) => {
 
 /**
  * @route   GET /api/auth/me
- * @desc    Get current logged-in user info
+ * @desc    Get current logged in user
  * @access  Private
  */
 const getMe = async (req, res) => {
   try {
-    const user = req.user;
-    res.json({
-      success: true,
-      data: { _id: user._id, name: user.name, email: user.email, role: user.role },
-    });
+    // User is already attached to req by auth middleware
+    res.json({ success: true, data: req.user });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
 };
 
-module.exports = { registerPatient, login, getMe };
+module.exports = { register, login, getMe };

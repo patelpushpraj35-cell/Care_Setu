@@ -16,7 +16,8 @@ const chatbotRoutes = require('./routes/chatbot');
 const app = express();
 
 // Connect to MongoDB
-connectDB();
+// Initialize Firebase is handled within controllers via firebase.js config
+// connectDB(); // No longer using MongoDB (In-memory or otherwise)
 
 // Security middleware
 app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
@@ -73,5 +74,6 @@ const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`\n🏥 CareSetu Server running on port ${PORT}`);
   console.log(`📦 Environment: ${process.env.NODE_ENV}`);
-  console.log(`🔗 API: http://localhost:${PORT}/api\n`);
+  console.log(`🔗 API: http://localhost:${PORT}/api`);
+  console.log(`🔥 Database: Firebase Firestore\n`);
 });

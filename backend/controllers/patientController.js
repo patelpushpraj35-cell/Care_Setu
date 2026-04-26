@@ -1,7 +1,5 @@
-const User = require('../models/User');
-const PatientProfile = require('../models/PatientProfile');
-const Report = require('../models/Report');
-const Treatment = require('../models/Treatment');
+const { db } = require('../config/firebase');
+const { collection, query, where, getDocs, getDoc, doc, updateDoc, setDoc, orderBy, limit } = require('firebase/firestore');
 const { maskAadhaar, encryptAadhaar } = require('../utils/helpers');
 
 /**
@@ -11,8 +9,9 @@ const { maskAadhaar, encryptAadhaar } = require('../utils/helpers');
  */
 const getProfile = async (req, res) => {
   try {
-    const profile = await PatientProfile.findOne({ userId: req.user._id });
-    if (!profile) {
+    const profileDoc = await getDoc(doc(db, 'patientProfiles', req.user._id));
+    
+    if (!profileDoc.exists()) {
       return res.status(404).json({ success: false, message: 'Profile not found. Please complete registration.' });
     }
 
@@ -20,7 +19,7 @@ const getProfile = async (req, res) => {
       success: true,
       data: {
         user: { _id: req.user._id, name: req.user.name, email: req.user.email },
-        profile,
+        profile: { _id: profileDoc.id, ...profileDoc.data() },
       },
     });
   } catch (error) {
@@ -39,11 +38,11 @@ const updateProfile = async (req, res) => {
 
     // Update User name if changed
     if (name) {
-      await User.findByIdAndUpdate(req.user._id, { name });
+      await updateDoc(doc(db, 'users', req.user._id), { name });
     }
 
     // Build update object
-    const updateData = {};
+    const updateData = { updatedAt: new Date().toISOString() };
     if (mobileNumber) updateData.mobileNumber = mobileNumber;
     if (emergencyContact) updateData.emergencyContact = emergencyContact;
     if (bloodGroup) updateData.bloodGroup = bloodGroup;
@@ -56,13 +55,12 @@ const updateProfile = async (req, res) => {
       updateData.aadhaarEncrypted = encryptAadhaar(aadhaarNumber);
     }
 
-    const profile = await PatientProfile.findOneAndUpdate(
-      { userId: req.user._id },
-      { $set: updateData },
-      { new: true, upsert: true }
-    );
+    const profileRef = doc(db, 'patientProfiles', req.user._id);
+    await setDoc(profileRef, { userId: req.user._id, ...updateData }, { merge: true });
 
-    res.json({ success: true, message: 'Profile updated successfully.', data: profile });
+    const updatedProfile = await getDoc(profileRef);
+
+    res.json({ success: true, message: 'Profile updated successfully.', data: updatedProfile.data() });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
@@ -70,28 +68,38 @@ const updateProfile = async (req, res) => {
 
 /**
  * @route   GET /api/patient/dashboard
- * @desc    Get patient dashboard data (profile + recent reports + treatments)
+ * @desc    Get patient dashboard data
  * @access  Patient
  */
 const getDashboard = async (req, res) => {
   try {
-    const [profile, reports, treatments] = await Promise.all([
-      PatientProfile.findOne({ userId: req.user._id }),
-      Report.find({ patientId: req.user._id })
-        .populate('hospitalId', 'name')
-        .sort({ createdAt: -1 })
-        .limit(5),
-      Treatment.find({ patientId: req.user._id })
-        .populate('hospitalId', 'name')
-        .sort({ createdAt: -1 })
-        .limit(5),
-    ]);
+    const profileDoc = await getDoc(doc(db, 'patientProfiles', req.user._id));
+    
+    // Recent Reports
+    const reportsQuery = query(
+      collection(db, 'reports'),
+      where('patientId', '==', req.user._id),
+      orderBy('createdAt', 'desc'),
+      limit(5)
+    );
+    const reportsSnapshot = await getDocs(reportsQuery);
+    const reports = reportsSnapshot.docs.map(d => ({ _id: d.id, ...d.data() }));
+
+    // Recent Treatments
+    const treatmentsQuery = query(
+      collection(db, 'treatments'),
+      where('patientId', '==', req.user._id),
+      orderBy('createdAt', 'desc'),
+      limit(5)
+    );
+    const treatmentsSnapshot = await getDocs(treatmentsQuery);
+    const treatments = treatmentsSnapshot.docs.map(d => ({ _id: d.id, ...d.data() }));
 
     res.json({
       success: true,
       data: {
         user: { _id: req.user._id, name: req.user.name, email: req.user.email },
-        profile,
+        profile: profileDoc.exists() ? profileDoc.data() : null,
         recentReports: reports,
         recentTreatments: treatments,
       },
@@ -108,9 +116,9 @@ const getDashboard = async (req, res) => {
  */
 const getReports = async (req, res) => {
   try {
-    const reports = await Report.find({ patientId: req.user._id })
-      .populate('hospitalId', 'name email')
-      .sort({ createdAt: -1 });
+    const q = query(collection(db, 'reports'), where('patientId', '==', req.user._id), orderBy('createdAt', 'desc'));
+    const snapshot = await getDocs(q);
+    const reports = snapshot.docs.map(d => ({ _id: d.id, ...d.data() }));
 
     res.json({ success: true, data: reports });
   } catch (error) {
@@ -125,9 +133,9 @@ const getReports = async (req, res) => {
  */
 const getTreatments = async (req, res) => {
   try {
-    const treatments = await Treatment.find({ patientId: req.user._id })
-      .populate('hospitalId', 'name email')
-      .sort({ createdAt: -1 });
+    const q = query(collection(db, 'treatments'), where('patientId', '==', req.user._id), orderBy('createdAt', 'desc'));
+    const snapshot = await getDocs(q);
+    const treatments = snapshot.docs.map(d => ({ _id: d.id, ...d.data() }));
 
     res.json({ success: true, data: treatments });
   } catch (error) {
@@ -137,14 +145,14 @@ const getTreatments = async (req, res) => {
 
 /**
  * @route   GET /api/patient/qr
- * @desc    Get QR code data (returns patientId for QR generation)
+ * @desc    Get QR code data
  * @access  Patient
  */
 const getQRData = async (req, res) => {
   try {
-    const profile = await PatientProfile.findOne({ userId: req.user._id });
+    const profileDoc = await getDoc(doc(db, 'patientProfiles', req.user._id));
+    const profile = profileDoc.exists() ? profileDoc.data() : null;
 
-    // QR encodes patientId + name + bloodGroup for emergency use
     const qrData = JSON.stringify({
       patientId: req.user._id,
       name: req.user.name,
