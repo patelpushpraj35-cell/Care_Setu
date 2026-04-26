@@ -22,7 +22,8 @@ Always:
 - Use simple language (avoid heavy medical jargon)
 - Mention when to consult a doctor
 - Format responses clearly with bullet points where useful
-- Keep responses concise but comprehensive`;
+- Keep responses concise but comprehensive
+- CRITICAL: Respond in the EXACT SAME LANGUAGE as the user's query. If the user asks in Hindi, you MUST reply in Hindi. If the user asks in English, you MUST reply in English.`;
 
 /**
  * @route   POST /api/chatbot/chat

@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { chatbotService } from '../../services';
 import Button from '../../components/ui/Button';
 import { Spinner } from '../../components/ui/Spinner';
-import { MessageCircle, Send, Bot, User, RefreshCw, Volume2 } from 'lucide-react';
+import { MessageCircle, Send, Bot, User, RefreshCw } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 
 const ChatbotPage = () => {
@@ -109,21 +109,8 @@ const ChatbotPage = () => {
                 </div>
                 <div className={`max-w-[80%] rounded-2xl px-4 py-3 text-sm ${msg.role === 'user' ? 'bg-blue-600 text-white rounded-tr-sm' : 'bg-slate-100 text-slate-800 rounded-tl-sm'}`}>
                   {msg.role === 'assistant' ? (
-                    <div className="relative">
-                      <div className="prose prose-sm max-w-none pr-8">
-                        <ReactMarkdown>{msg.text}</ReactMarkdown>
-                      </div>
-                      <button 
-                        onClick={() => {
-                          const utterance = new SpeechSynthesisUtterance(msg.text.replace(/[*_#]/g, ''));
-                          window.speechSynthesis.cancel();
-                          window.speechSynthesis.speak(utterance);
-                        }}
-                        className="absolute top-0 right-0 text-slate-400 hover:text-blue-600 transition-colors"
-                        title="Read aloud"
-                      >
-                        <Volume2 size={16} />
-                      </button>
+                    <div className="prose prose-sm max-w-none">
+                      <ReactMarkdown>{msg.text}</ReactMarkdown>
                     </div>
                   ) : msg.text}
                 </div>
