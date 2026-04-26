@@ -55,6 +55,7 @@ const HelpModal = ({ onClose }) => (
 const DashboardLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [helpOpen,    setHelpOpen]    = useState(false);
+  const [notifOpen,   setNotifOpen]   = useState(false);
   const { user }           = useAuth();
   const { theme, toggleTheme } = useTheme();
 
@@ -130,10 +131,42 @@ const DashboardLayout = () => {
             </button>
 
             {/* Bell */}
-            <button className="cs-icon-btn" style={{ position: 'relative' }} aria-label="Notifications">
-              <Bell size={16} />
-              <span style={{ position: 'absolute', top: '.375rem', right: '.375rem', width: '.4375rem', height: '.4375rem', background: 'var(--danger)', borderRadius: '50%' }} />
-            </button>
+            <div style={{ position: 'relative' }}>
+              <button 
+                className="cs-icon-btn" 
+                style={{ position: 'relative' }} 
+                aria-label="Notifications"
+                onClick={() => setNotifOpen(!notifOpen)}
+              >
+                <Bell size={16} />
+                <span style={{ position: 'absolute', top: '.375rem', right: '.375rem', width: '.4375rem', height: '.4375rem', background: 'var(--danger)', borderRadius: '50%' }} />
+              </button>
+              
+              {/* Notification Dropdown */}
+              {notifOpen && (
+                <>
+                  <div style={{ position: 'fixed', inset: 0, zIndex: 40 }} onClick={() => setNotifOpen(false)} />
+                  <div style={{ position: 'absolute', top: 'calc(100% + .5rem)', right: 0, width: '300px', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', boxShadow: '0 10px 25px -5px rgba(0,0,0,.1),0 8px 10px -6px rgba(0,0,0,.1)', zIndex: 50, overflow: 'hidden' }}>
+                    <div style={{ padding: '1rem', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <h3 style={{ fontSize: '.875rem', fontWeight: 600, color: 'var(--text-primary)' }}>Notifications</h3>
+                      <span style={{ fontSize: '.6875rem', color: 'var(--accent)', cursor: 'pointer', fontWeight: 500 }}>Mark all as read</span>
+                    </div>
+                    <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
+                      <div style={{ padding: '1rem', borderBottom: '1px solid var(--border)', background: 'var(--bg-subtle)' }}>
+                        <p style={{ fontSize: '.8125rem', color: 'var(--text-primary)', fontWeight: 500, marginBottom: '.25rem' }}>Welcome to CareSetu</p>
+                        <p style={{ fontSize: '.75rem', color: 'var(--text-secondary)' }}>Your account has been successfully created and configured.</p>
+                        <p style={{ fontSize: '.625rem', color: 'var(--text-faint)', marginTop: '.375rem' }}>Just now</p>
+                      </div>
+                      <div style={{ padding: '1rem' }}>
+                        <p style={{ fontSize: '.8125rem', color: 'var(--text-primary)', fontWeight: 500, marginBottom: '.25rem' }}>Profile Completion</p>
+                        <p style={{ fontSize: '.75rem', color: 'var(--text-secondary)' }}>Please make sure all your details are up to date for better assistance.</p>
+                        <p style={{ fontSize: '.625rem', color: 'var(--text-faint)', marginTop: '.375rem' }}>1 hour ago</p>
+                      </div>
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
 
             {/* Separator */}
             <div style={{ width: 1, height: '1.25rem', background: 'var(--border)', margin: '0 .25rem' }} />
