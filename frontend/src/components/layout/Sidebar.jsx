@@ -91,6 +91,22 @@ const Sidebar = ({ onClose }) => {
         ))}
       </nav>
 
+      {/* ── Credits ── */}
+      <div style={{ padding: '.75rem .625rem', borderTop: '1px solid var(--border)' }}>
+        <p style={{ fontSize: '.625rem', fontWeight: 600, color: 'var(--text-faint)', marginBottom: '.25rem' }}>
+          Designed and Developed by Team CadeYugma
+        </p>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '.25rem', fontSize: '.625rem' }}>
+          <a href="https://www.linkedin.com/in/pushpraj-patel-16a2843b4/" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent)', textDecoration: 'none' }} className="hover:underline">Pushpraj Patel</a>
+          <span style={{ color: 'var(--text-faint)' }}>•</span>
+          <a href="https://www.linkedin.com/in/raaj-sharma-7a207b243/" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent)', textDecoration: 'none' }} className="hover:underline">Raaj Sharma</a>
+          <span style={{ color: 'var(--text-faint)' }}>•</span>
+          <a href="https://www.linkedin.com/in/rajveer-singh-chouhan-a92a713b4/" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent)', textDecoration: 'none' }} className="hover:underline">Rajveer Singh</a>
+          <span style={{ color: 'var(--text-faint)' }}>•</span>
+          <a href="https://www.linkedin.com/in/samarth-choudhary-59203133a/" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent)', textDecoration: 'none' }} className="hover:underline">Samarth Choudhary</a>
+        </div>
+      </div>
+
       {/* ── Logout ── */}
       <div style={{ padding: '.625rem', borderTop: '1px solid var(--border)' }}>
         <button

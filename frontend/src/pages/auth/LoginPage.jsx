@@ -83,7 +83,18 @@ const LoginPage = () => {
           </div>
         </div>
 
-        <p style={{ color: 'rgba(255,255,255,.4)', fontSize: '.75rem' }}>© 2025 CareSetu · Empowering Healthcare in India</p>
+        <div style={{ color: 'rgba(255,255,255,.6)', fontSize: '.75rem', lineHeight: 1.5 }}>
+          <p style={{ marginBottom: '.25rem' }}>© 2026 CareSetu · Designed and Developed by Team CadeYugma</p>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '.375rem', fontSize: '.6875rem' }}>
+            <a href="https://www.linkedin.com/in/pushpraj-patel-16a2843b4/" target="_blank" rel="noopener noreferrer" style={{ color: 'rgba(255,255,255,.9)', textDecoration: 'none' }} className="hover:underline">Pushpraj Patel (Team Leader)</a>
+            <span>•</span>
+            <a href="https://www.linkedin.com/in/raaj-sharma-7a207b243/" target="_blank" rel="noopener noreferrer" style={{ color: 'rgba(255,255,255,.9)', textDecoration: 'none' }} className="hover:underline">Raaj Sharma</a>
+            <span>•</span>
+            <a href="https://www.linkedin.com/in/rajveer-singh-chouhan-a92a713b4/" target="_blank" rel="noopener noreferrer" style={{ color: 'rgba(255,255,255,.9)', textDecoration: 'none' }} className="hover:underline">Rajveer Singh Chouhan</a>
+            <span>•</span>
+            <a href="https://www.linkedin.com/in/samarth-choudhary-59203133a/" target="_blank" rel="noopener noreferrer" style={{ color: 'rgba(255,255,255,.9)', textDecoration: 'none' }} className="hover:underline">Samarth Choudhary</a>
+          </div>
+        </div>
       </div>
 
       {/* ── Right Panel ────────────────────────────── */}
