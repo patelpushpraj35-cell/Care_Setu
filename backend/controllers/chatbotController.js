@@ -61,7 +61,7 @@ const chat = async (req, res) => {
       prompt = `${SYSTEM_CONTEXT}\n\nThe user wants to understand their medical lab report. Query: ${message}\n\nExplain the values, what they mean in simple terms, and what action (if any) they should take.`;
     }
 
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+    const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
     const result = await model.generateContent(prompt);
     const response = await result.response;
     const text = response.text();
