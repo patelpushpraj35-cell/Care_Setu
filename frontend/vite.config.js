@@ -2,6 +2,8 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 
+const BACKEND_URL = 'https://care-setu.onrender.com'
+
 export default defineConfig({
   plugins: [
     react(),
@@ -11,12 +13,14 @@ export default defineConfig({
     port: 5173,
     proxy: {
       '/api': {
-        target: 'http://localhost:5000',
+        target: BACKEND_URL,
         changeOrigin: true,
+        secure: true,
       },
       '/uploads': {
-        target: 'http://localhost:5000',
+        target: BACKEND_URL,
         changeOrigin: true,
+        secure: true,
       },
     },
   },
