@@ -9,12 +9,20 @@ const getDashboard = async (req, res) => {
   try {
     const usersSnap = await getDocs(collection(db, 'users'));
     const reportsSnap = await getDocs(collection(db, 'reports'));
+    const treatmentsSnap = await getDocs(collection(db, 'treatments'));
+    
+    // In a real app we'd fetch actual logs from a logs collection
+    // For now we'll send a mock activity or empty array to prevent errors
     res.json({
       success: true,
       data: {
-        totalPatients: usersSnap.docs.filter(d => d.data().role === 'patient').length,
-        totalHospitals: usersSnap.docs.filter(d => d.data().role === 'hospital').length,
-        totalReports: reportsSnap.size
+        stats: {
+          totalPatients: usersSnap.docs.filter(d => d.data().role === 'patient').length,
+          totalHospitals: usersSnap.docs.filter(d => d.data().role === 'hospital').length,
+          totalReports: reportsSnap.size,
+          totalTreatments: treatmentsSnap.size
+        },
+        recentActivity: []
       }
     });
   } catch (error) {
