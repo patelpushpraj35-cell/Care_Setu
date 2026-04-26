@@ -1,5 +1,5 @@
 const { db } = require('../config/firebase');
-const { collection, query, where, getDocs, getDoc, doc, updateDoc, setDoc, addDoc, orderBy, limit } = require('firebase/firestore');
+const { doc, getDoc, getDocs, collection, query, where, addDoc, updateDoc } = require('firebase/firestore');
 
 /**
  * @route   GET /api/hospital/profile
@@ -19,12 +19,8 @@ const getProfile = async (req, res) => {
  */
 const getDashboard = async (req, res) => {
   try {
-    const reportsSnapshot = await getDocs(query(collection(db, 'reports'), where('hospitalId', '==', req.user._id), limit(10)));
-    const stats = {
-      totalReports: reportsSnapshot.size,
-      recentReports: reportsSnapshot.docs.map(d => ({ _id: d.id, ...d.data() }))
-    };
-    res.json({ success: true, data: stats });
+    const snap = await getDocs(query(collection(db, 'reports'), where('hospitalId', '==', req.user._id)));
+    res.json({ success: true, data: { totalReports: snap.size, recentReports: snap.docs.map(d => ({ _id: d.id, ...d.data() })) } });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
@@ -66,12 +62,8 @@ const uploadReport = async (req, res) => {
   try {
     const { patientId, fileName, description, reportType } = req.body;
     const newReport = {
-      patientId,
-      hospitalId: req.user._id,
-      hospitalName: req.user.name,
-      fileName,
-      description,
-      reportType,
+      patientId, hospitalId: req.user._id, hospitalName: req.user.name,
+      fileName, description, reportType,
       fileUrl: req.file ? `/uploads/reports/${req.file.filename}` : '/uploads/reports/default.pdf',
       createdAt: new Date().toISOString()
     };
@@ -114,14 +106,11 @@ const updateMedicalHistory = async (req, res) => {
  */
 const getMyPatients = async (req, res) => {
   try {
-    const snapshot = await getDocs(query(collection(db, 'users'), where('role', '==', 'patient')));
-    res.json({ success: true, data: snapshot.docs.map(d => ({ _id: d.id, ...d.data() })) });
+    const snap = await getDocs(query(collection(db, 'users'), where('role', '==', 'patient')));
+    res.json({ success: true, data: snap.docs.map(d => ({ _id: d.id, ...d.data() })) });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
 };
 
-module.exports = { 
-  getProfile, getDashboard, getPatientByQR, 
-  uploadReport, addTreatment, updateMedicalHistory, getMyPatients 
-};
+module.exports = { getProfile, getDashboard, getPatientByQR, uploadReport, addTreatment, updateMedicalHistory, getMyPatients };

@@ -2,6 +2,11 @@ const { initializeApp } = require("firebase/app");
 const { getFirestore } = require("firebase/firestore");
 const { getAuth } = require("firebase/auth");
 
+// Node.js compatibility polyfill
+if (typeof fetch === "undefined") {
+  global.fetch = require("cross-fetch");
+}
+
 const firebaseConfig = {
   apiKey: "AIzaSyCRaohPy9a12KyBwwQyJX96iefX_uNTngM",
   authDomain: "caresetu-8a15d.firebaseapp.com",

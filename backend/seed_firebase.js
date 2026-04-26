@@ -1,17 +1,16 @@
 const { db } = require('./config/firebase');
-const { collection, setDoc, doc, getDocs, deleteDoc, query } = require('firebase/firestore');
 const bcrypt = require('bcryptjs');
 
 const seedFirebase = async () => {
   try {
-    console.log('🌱 Starting Firebase Firestore Seeding...');
+    console.log('🌱 Starting Firebase Admin Seeding...');
 
     // Helper to clear a collection
     const clearCollection = async (colName) => {
-      const q = query(collection(db, colName));
-      const snapshot = await getDocs(q);
-      const deletePromises = snapshot.docs.map(d => deleteDoc(d.ref));
-      await Promise.all(deletePromises);
+      const snapshot = await db.collection(colName).get();
+      const batch = db.batch();
+      snapshot.docs.forEach(d => batch.delete(d.ref));
+      await batch.commit();
       console.log(`🗑️ Cleared collection: ${colName}`);
     };
 
@@ -35,7 +34,7 @@ const seedFirebase = async () => {
       isActive: true,
       createdAt: new Date().toISOString()
     };
-    await setDoc(doc(db, 'users', adminId), adminData);
+    await db.collection('users').doc(adminId).set(adminData);
     console.log('👤 Admin demo created');
 
     // ---- Create Hospital ----
@@ -48,9 +47,9 @@ const seedFirebase = async () => {
       isActive: true,
       createdAt: new Date().toISOString()
     };
-    await setDoc(doc(db, 'users', hospitalId), hospitalUserData);
+    await db.collection('users').doc(hospitalId).set(hospitalUserData);
 
-    await setDoc(doc(db, 'hospitalProfiles', hospitalId), {
+    await db.collection('hospitalProfiles').doc(hospitalId).set({
       userId: hospitalId,
       hospitalName: 'AIIMS Delhi',
       registrationNumber: 'AIIMS-DL-001',
@@ -73,9 +72,9 @@ const seedFirebase = async () => {
       isActive: true,
       createdAt: new Date().toISOString()
     };
-    await setDoc(doc(db, 'users', patientId), patientUserData);
+    await db.collection('users').doc(patientId).set(patientUserData);
 
-    await setDoc(doc(db, 'patientProfiles', patientId), {
+    await db.collection('patientProfiles').doc(patientId).set({
       userId: patientId,
       mobileNumber: '9876543210',
       emergencyContact: { name: 'Suresh Sharma', phone: '9876543211', relation: 'Father' },
@@ -89,38 +88,7 @@ const seedFirebase = async () => {
     });
     console.log('👥 Patient demo created');
 
-    // ---- Create Demo Report ----
-    await setDoc(doc(collection(db, 'reports')), {
-      patientId: patientId,
-      hospitalId: hospitalId,
-      hospitalName: 'AIIMS Delhi',
-      fileUrl: '/uploads/reports/sample-report.pdf',
-      fileName: 'blood-test-report.pdf',
-      fileType: 'pdf',
-      description: 'Complete Blood Count (CBC) - Quarterly check',
-      reportType: 'blood_test',
-      createdAt: new Date().toISOString()
-    });
-
-    // ---- Create Demo Treatment ----
-    await setDoc(doc(collection(db, 'treatments')), {
-      patientId: patientId,
-      hospitalId: hospitalId,
-      hospitalName: 'AIIMS Delhi',
-      doctorName: 'Dr. Ramesh Gupta',
-      diagnosis: 'Type 2 Diabetes with Hypertension',
-      treatmentDetails: 'Continue Metformin 500mg twice daily.',
-      medications: [{ name: 'Metformin', dosage: '500mg', frequency: 'Twice daily', duration: '3 months' }],
-      lifestyleAdvice: 'Low-carb diet. Walk 30 minutes daily.',
-      status: 'active',
-      createdAt: new Date().toISOString()
-    });
-
-    console.log('\n✅ Firebase Seeding completed successfully!\n');
-    console.log('📧 Credentials:');
-    console.log('ADMIN    → admin@caresetu.in / Admin@123');
-    console.log('HOSPITAL → aiims@caresetu.in / Hospital@123');
-    console.log('PATIENT  → rahul@example.com / Patient@123');
+    console.log('\n✅ Firebase Admin Seeding completed successfully!\n');
     
   } catch (error) {
     console.error('❌ Firebase Seeding failed:', error);
