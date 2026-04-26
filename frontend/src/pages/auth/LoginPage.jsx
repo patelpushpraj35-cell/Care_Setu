@@ -40,7 +40,11 @@ const LoginPage = () => {
       const role = data.data.user.role;
       navigate(role === 'admin' ? '/admin/dashboard' : role === 'hospital' ? '/hospital/dashboard' : '/patient/dashboard');
     } catch (err) {
-      setError(err.response?.data?.message || 'Login failed. Please try again.');
+      if (!err.response) {
+        setError('Network Error: Unable to connect to the backend. Please check CORS or your internet connection.');
+      } else {
+        setError(err.response?.data?.message || 'Login failed. Please try again. (Did you forget to run the seed script?)');
+      }
     } finally {
       setLoading(false);
     }
