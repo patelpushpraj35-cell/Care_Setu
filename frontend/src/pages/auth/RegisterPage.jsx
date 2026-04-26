@@ -39,8 +39,12 @@ const RegisterPage = () => {
       toast.success('Registration successful! Welcome to CareSetu.');
       navigate('/patient/dashboard');
     } catch (err) {
-      setError(err.response?.data?.message || 'Registration failed.');
-      setStep(1);
+      const data = err.response?.data;
+      if (data?.errors && data.errors.length > 0) {
+        setError(`${data.errors[0].field}: ${data.errors[0].message}`);
+      } else {
+        setError(data?.message || 'Registration failed.');
+      }
     } finally {
       setLoading(false);
     }

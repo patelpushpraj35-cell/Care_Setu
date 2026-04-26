@@ -8,7 +8,7 @@ const jwt = require('jsonwebtoken');
  */
 const registerPatient = async (req, res) => {
   try {
-    const { name, email, password } = req.body;
+    const { name, email, password, mobileNumber, emergencyContact, bloodGroup, medicalHistory, aadhaarNumber, address, dateOfBirth, gender } = req.body;
 
     const usersRef = collection(db, 'users');
     const q = query(usersRef, where('email', '==', email.toLowerCase()));
@@ -31,6 +31,20 @@ const registerPatient = async (req, res) => {
     };
 
     const docRef = await addDoc(usersRef, newUser);
+
+    const { doc, setDoc } = require('firebase/firestore');
+    await setDoc(doc(db, 'patientProfiles', docRef.id), {
+      userId: docRef.id,
+      mobileNumber: mobileNumber || '',
+      emergencyContact: emergencyContact || { name: '', phone: '', relation: '' },
+      bloodGroup: bloodGroup || '',
+      medicalHistory: medicalHistory || [],
+      aadhaarMasked: aadhaarNumber ? `XXXX-XXXX-${aadhaarNumber.slice(-4)}` : '',
+      address: address || { street: '', city: '', state: '', pincode: '' },
+      dateOfBirth: dateOfBirth || '',
+      gender: gender || '',
+      createdAt: new Date().toISOString()
+    });
 
     const token = jwt.sign({ id: docRef.id, role: 'patient' }, process.env.JWT_SECRET, {
       expiresIn: process.env.JWT_EXPIRE || '7d',
