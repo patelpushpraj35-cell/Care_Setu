@@ -35,8 +35,20 @@ const ScanQRPage = () => {
   };
 
   useEffect(() => {
-    if (!scanning) return;
-    const scanner = new Html5QrcodeScanner('qr-reader', { fps: 10, qrbox: 250 });
+    if (!scanning) {
+      if (scannerRef.current) {
+        scannerRef.current.clear().catch(() => {});
+        scannerRef.current = null;
+      }
+      return;
+    }
+
+    // Prevent double rendering in React Strict Mode
+    if (scannerRef.current) return;
+
+    const scanner = new Html5QrcodeScanner('qr-reader', { fps: 10, qrbox: 250, rememberLastUsedCamera: true });
+    scannerRef.current = scanner;
+
     scanner.render(
       (decodedText) => {
         try {
@@ -45,13 +57,23 @@ const ScanQRPage = () => {
         } catch {
           fetchPatient(decodedText);
         }
-        scanner.clear();
+        if (scannerRef.current) {
+          scannerRef.current.clear().catch(() => {});
+          scannerRef.current = null;
+        }
         setScanning(false);
       },
-      (err) => console.warn('QR scan error:', err)
+      (err) => {
+        // Ignored, happens constantly when no QR is found
+      }
     );
-    scannerRef.current = scanner;
-    return () => scanner.clear().catch(() => {});
+
+    return () => {
+      if (scannerRef.current) {
+        scannerRef.current.clear().catch(() => {});
+        scannerRef.current = null;
+      }
+    };
   }, [scanning]);
 
   return (
@@ -68,7 +90,13 @@ const ScanQRPage = () => {
             <Button icon={QrCode} fullWidth onClick={() => setScanning(!scanning)}>
               {scanning ? 'Stop Scanning' : 'Open QR Scanner'}
             </Button>
-            {scanning && <div id="qr-reader" className="w-full rounded-lg overflow-hidden" />}
+            {scanning && (
+              <div className="bg-blue-50 border border-blue-200 text-blue-700 text-sm p-3 rounded-lg flex items-start gap-2">
+                <AlertCircle size={16} className="mt-0.5 flex-shrink-0" />
+                <p>Please click <strong>&quot;Request Camera Permissions&quot;</strong> below and allow your browser to use the camera.</p>
+              </div>
+            )}
+            {scanning && <div id="qr-reader" className="w-full rounded-lg overflow-hidden border border-slate-200" />}
 
             <div className="flex items-center gap-3">
               <div className="h-px flex-1 bg-slate-200" />
