@@ -7,9 +7,9 @@ import ReactMarkdown from 'react-markdown';
 
 const ChatbotPage = () => {
   const [options] = useState([
-    { id: 'scheme', title: 'Government Schemes', description: 'Ayushman Bharat, PM-JAY & more', icon: '🏛️', defaultPrompt: 'What are the main government healthcare schemes in India and how can I apply?' },
-    { id: 'treatment', title: 'Understand Treatment', description: 'Get prescriptions explained simply', icon: '💊', defaultPrompt: 'Can you explain my treatment plan in simple language?' },
-    { id: 'report', title: 'Explain Lab Report', description: 'Understand your test results', icon: '🔬', defaultPrompt: 'Help me understand my medical lab report values.' },
+    { id: 'scheme', title: 'Government Schemes', description: 'Ayushman Bharat, PM-JAY & more', icon: '🏛️', defaultPrompt: 'भारत में प्रमुख सरकारी स्वास्थ्य योजनाएं क्या हैं और मैं कैसे आवेदन कर सकता हूं?' },
+    { id: 'treatment', title: 'Understand Treatment', description: 'Get prescriptions explained simply', icon: '💊', defaultPrompt: 'क्या आप मेरे उपचार योजना (treatment plan) को सरल भाषा में समझा सकते हैं?' },
+    { id: 'report', title: 'Explain Lab Report', description: 'Understand your test results', icon: '🔬', defaultPrompt: 'कृपया मेरे मेडिकल लैब रिपोर्ट को समझने में मेरी मदद करें।' },
   ]);
   const [activeType, setActiveType] = useState(null);
   const [messages, setMessages] = useState([]);
