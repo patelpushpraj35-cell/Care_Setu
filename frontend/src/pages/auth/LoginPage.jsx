@@ -4,19 +4,32 @@ import { useAuth } from '../../contexts/AuthContext';
 import { authService } from '../../services';
 import Button from '../../components/ui/Button';
 import Input from '../../components/ui/Input';
-import { Heart, Mail, Lock, AlertCircle } from 'lucide-react';
+import { Heart, Mail, Lock, AlertCircle, ShieldCheck, Building2, User } from 'lucide-react';
 import toast from 'react-hot-toast';
+
+const features = [
+  { icon: '🏥', text: 'Instant hospital registration' },
+  { icon: '📋', text: 'Digital medical records' },
+  { icon: '🤖', text: 'AI-powered health guidance' },
+  { icon: '🔒', text: 'Secure & private health data' },
+];
+
+const demoLogins = [
+  { label: 'Admin',    icon: ShieldCheck, email: 'admin@caresetu.in',   password: 'Admin@123',    color: '#7c3aed' },
+  { label: 'Hospital', icon: Building2,   email: 'aiims@caresetu.in',   password: 'Hospital@123', color: '#059669' },
+  { label: 'Patient',  icon: User,        email: 'rahul@example.com',   password: 'Patient@123',  color: '#2563eb' },
+];
 
 const LoginPage = () => {
   const { login } = useAuth();
-  const navigate = useNavigate();
-  const [form, setForm] = useState({ email: '', password: '' });
+  const navigate  = useNavigate();
+  const [form,    setForm]    = useState({ email: '', password: '' });
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error,   setError]   = useState('');
 
-  const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
+  const handleChange = e => setForm({ ...form, [e.target.name]: e.target.value });
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async e => {
     e.preventDefault();
     setError('');
     setLoading(true);
@@ -33,97 +46,98 @@ const LoginPage = () => {
     }
   };
 
-  const demoLogins = [
-    { label: 'Admin', email: 'admin@caresetu.in', password: 'Admin@123', color: 'violet' },
-    { label: 'Hospital', email: 'aiims@caresetu.in', password: 'Hospital@123', color: 'emerald' },
-    { label: 'Patient', email: 'rahul@example.com', password: 'Patient@123', color: 'blue' },
-  ];
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-cyan-50 flex">
-      {/* Left Panel */}
-      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-blue-700 via-blue-600 to-cyan-600 p-12 flex-col justify-between">
-        <div className="flex items-center gap-2 text-white">
-          <Heart size={28} className="fill-white" />
-          <span className="text-2xl font-bold">CareSetu</span>
+    <div className="cs-auth-panel">
+
+      {/* ── Left Panel ─────────────────────────────── */}
+      <div className="cs-auth-left">
+        {/* Logo */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '.625rem' }}>
+          <div style={{ width: '2.25rem', height: '2.25rem', borderRadius: '10px', background: 'rgba(255,255,255,.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <Heart size={20} style={{ fill: '#fff', color: '#fff' }} />
+          </div>
+          <span style={{ fontSize: '1.25rem', fontWeight: 800, color: '#fff', letterSpacing: '-.02em' }}>CareSetu</span>
         </div>
-        <div className="text-white space-y-6">
-          <h2 className="text-4xl font-bold leading-tight">
-            Your Health,<br />One Platform
+
+        {/* Hero */}
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '2rem 0' }}>
+          <h2 style={{ fontSize: '2rem', fontWeight: 800, color: '#fff', lineHeight: 1.2, marginBottom: '1rem' }}>
+            Your Health,<br />One Platform.
           </h2>
-          <p className="text-blue-100 text-lg">
+          <p style={{ color: 'rgba(255,255,255,.7)', fontSize: '.9375rem', lineHeight: 1.6, marginBottom: '2rem' }}>
             Centralized healthcare management for patients, hospitals, and administrators across India.
           </p>
-          <div className="space-y-3">
-            {['🏥 Instant hospital registration', '📋 Digital medical records', '🤖 AI-powered health guidance', '🏛️ Government scheme access'].map((f) => (
-              <div key={f} className="flex items-center gap-3 text-blue-100">
-                <span className="text-base">{f}</span>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '.75rem' }}>
+            {features.map(f => (
+              <div key={f.text} style={{ display: 'flex', alignItems: 'center', gap: '.75rem' }}>
+                <div style={{ width: '2rem', height: '2rem', borderRadius: '8px', background: 'rgba(255,255,255,.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '.875rem', flexShrink: 0 }}>
+                  {f.icon}
+                </div>
+                <span style={{ color: 'rgba(255,255,255,.85)', fontSize: '.875rem', fontWeight: 500 }}>{f.text}</span>
               </div>
             ))}
           </div>
         </div>
-        <p className="text-blue-200 text-sm">© 2024 CareSetu. Empowering Healthcare in India.</p>
+
+        <p style={{ color: 'rgba(255,255,255,.4)', fontSize: '.75rem' }}>© 2025 CareSetu · Empowering Healthcare in India</p>
       </div>
 
-      {/* Right Panel */}
-      <div className="flex-1 flex items-center justify-center p-8">
-        <div className="w-full max-w-md space-y-6">
-          <div className="flex items-center gap-2 lg:hidden">
-            <Heart size={24} className="text-blue-600 fill-blue-600" />
-            <span className="text-xl font-bold text-slate-900">CareSetu</span>
+      {/* ── Right Panel ────────────────────────────── */}
+      <div className="cs-auth-right">
+        <div className="cs-auth-form-box">
+
+          {/* Mobile logo */}
+          <div className="lg:hidden" style={{ display: 'flex', alignItems: 'center', gap: '.5rem', marginBottom: '1.75rem' }}>
+            <Heart size={22} style={{ fill: 'var(--accent)', color: 'var(--accent)' }} />
+            <span style={{ fontSize: '1.125rem', fontWeight: 800, color: 'var(--text-primary)' }}>CareSetu</span>
           </div>
 
-          <div>
-            <h1 className="text-2xl font-bold text-slate-900">Sign in to your account</h1>
-            <p className="text-slate-500 mt-1 text-sm">Enter your credentials to continue</p>
+          <div style={{ marginBottom: '1.5rem' }}>
+            <h1 style={{ fontSize: '1.375rem', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '.25rem' }}>Sign in</h1>
+            <p style={{ fontSize: '.8125rem', color: 'var(--text-muted)' }}>Enter your credentials to continue</p>
           </div>
 
           {error && (
-            <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
-              <AlertCircle size={16} />
+            <div style={{ display: 'flex', alignItems: 'center', gap: '.5rem', padding: '.625rem .875rem', background: 'var(--danger-light)', border: '1px solid rgba(220,38,38,.2)', borderRadius: 'var(--radius)', color: 'var(--danger)', fontSize: '.8125rem', marginBottom: '1rem' }}>
+              <AlertCircle size={14} />
               {error}
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <Input
-              id="email" name="email" type="email" label="Email Address" required
-              icon={Mail} placeholder="your@email.com"
-              value={form.email} onChange={handleChange}
-            />
-            <Input
-              id="password" name="password" type="password" label="Password" required
-              icon={Lock} placeholder="••••••••"
-              value={form.password} onChange={handleChange}
-            />
-            <Button type="submit" fullWidth loading={loading} size="lg">
-              Sign In
-            </Button>
+          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            <Input id="email" name="email" type="email" label="Email Address" required icon={Mail} placeholder="your@email.com" value={form.email} onChange={handleChange} />
+            <Input id="password" name="password" type="password" label="Password" required icon={Lock} placeholder="••••••••" value={form.password} onChange={handleChange} />
+            <Button type="submit" fullWidth loading={loading} size="lg">Sign In</Button>
           </form>
 
-          <p className="text-center text-sm text-slate-600">
+          <p style={{ textAlign: 'center', fontSize: '.8125rem', color: 'var(--text-muted)', margin: '1rem 0' }}>
             New patient?{' '}
-            <Link to="/register" className="text-blue-600 font-semibold hover:underline">
+            <Link to="/register" style={{ color: 'var(--accent)', fontWeight: 600, textDecoration: 'none' }}>
               Create account
             </Link>
           </p>
 
           {/* Demo Quick Login */}
-          <div className="border-t border-slate-200 pt-4">
-            <p className="text-xs text-slate-500 text-center mb-3 font-medium">DEMO QUICK LOGIN</p>
-            <div className="grid grid-cols-3 gap-2">
-              {demoLogins.map(({ label, email, password }) => (
+          <div style={{ borderTop: '1px solid var(--border)', paddingTop: '1rem' }}>
+            <p style={{ fontSize: '.6875rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.06em', color: 'var(--text-faint)', textAlign: 'center', marginBottom: '.625rem' }}>
+              Demo Quick Login
+            </p>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '.5rem' }}>
+              {demoLogins.map(({ label, icon: Icon, email, password, color }) => (
                 <button
                   key={label}
                   type="button"
                   onClick={() => setForm({ email, password })}
-                  className="py-2 px-3 text-xs font-medium rounded-lg border border-slate-200 hover:bg-slate-50 text-slate-700 transition-colors"
+                  style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '.375rem', padding: '.625rem .5rem', borderRadius: 'var(--radius)', border: '1px solid var(--border)', background: 'var(--surface)', cursor: 'pointer', transition: 'all .15s' }}
+                  onMouseEnter={e => { e.currentTarget.style.borderColor = color; e.currentTarget.style.background = 'var(--bg-subtle)'; }}
+                  onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.background = 'var(--surface)'; }}
                 >
-                  {label}
+                  <Icon size={14} style={{ color }} />
+                  <span style={{ fontSize: '.6875rem', fontWeight: 600, color: 'var(--text-secondary)' }}>{label}</span>
                 </button>
               ))}
             </div>
-            <p className="text-xs text-slate-400 text-center mt-2">Click a role to fill credentials, then Sign In</p>
+            <p style={{ fontSize: '.6875rem', color: 'var(--text-faint)', textAlign: 'center', marginTop: '.5rem' }}>Click a role to fill credentials, then Sign In</p>
           </div>
         </div>
       </div>

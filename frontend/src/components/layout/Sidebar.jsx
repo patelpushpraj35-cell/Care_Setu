@@ -2,107 +2,104 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import {
   LayoutDashboard, Users, Building2, FileText, Activity,
-  QrCode, MessageCircle, User, LogOut, Heart, ChevronRight, Stethoscope,
+  QrCode, MessageCircle, User, LogOut, Heart, Stethoscope,
 } from 'lucide-react';
 
 const SIDEBAR_ITEMS = {
   admin: [
-    { label: 'Dashboard', to: '/admin/dashboard', icon: LayoutDashboard },
-    { label: 'Hospitals', to: '/admin/hospitals', icon: Building2 },
-    { label: 'Patients', to: '/admin/patients', icon: Users },
+    { label: 'Dashboard',  to: '/admin/dashboard',  icon: LayoutDashboard },
+    { label: 'Hospitals',  to: '/admin/hospitals',  icon: Building2 },
+    { label: 'Patients',   to: '/admin/patients',   icon: Users },
   ],
   patient: [
-    { label: 'Dashboard', to: '/patient/dashboard', icon: LayoutDashboard },
-    { label: 'My QR Code', to: '/patient/qr', icon: QrCode },
-    { label: 'Reports', to: '/patient/reports', icon: FileText },
-    { label: 'Treatments', to: '/patient/treatments', icon: Activity },
-    { label: 'AI Chatbot', to: '/patient/chatbot', icon: MessageCircle },
-    { label: 'Profile', to: '/patient/profile', icon: User },
+    { label: 'Dashboard',   to: '/patient/dashboard',  icon: LayoutDashboard },
+    { label: 'My QR Code',  to: '/patient/qr',         icon: QrCode },
+    { label: 'Reports',     to: '/patient/reports',    icon: FileText },
+    { label: 'Treatments',  to: '/patient/treatments', icon: Activity },
+    { label: 'AI Chatbot',  to: '/patient/chatbot',    icon: MessageCircle },
+    { label: 'Profile',     to: '/patient/profile',    icon: User },
   ],
   hospital: [
-    { label: 'Dashboard', to: '/hospital/dashboard', icon: LayoutDashboard },
-    { label: 'Scan QR', to: '/hospital/scan', icon: QrCode },
-    { label: 'My Patients', to: '/hospital/patients', icon: Users },
-    { label: 'Upload Report', to: '/hospital/reports/upload', icon: FileText },
-    { label: 'Add Treatment', to: '/hospital/treatments/add', icon: Stethoscope },
+    { label: 'Dashboard',     to: '/hospital/dashboard',         icon: LayoutDashboard },
+    { label: 'Scan QR',       to: '/hospital/scan',              icon: QrCode },
+    { label: 'My Patients',   to: '/hospital/patients',          icon: Users },
+    { label: 'Upload Report', to: '/hospital/reports/upload',    icon: FileText },
+    { label: 'Add Treatment', to: '/hospital/treatments/add',    icon: Stethoscope },
   ],
 };
 
-const roleColors = {
-  admin: 'from-violet-600 to-blue-600',
-  patient: 'from-blue-600 to-cyan-500',
-  hospital: 'from-emerald-600 to-teal-500',
+const roleGradient = {
+  admin:    'linear-gradient(135deg,#6d28d9,#2563eb)',
+  patient:  'linear-gradient(135deg,#2563eb,#0ea5e9)',
+  hospital: 'linear-gradient(135deg,#059669,#0ea5e9)',
 };
 
-const roleLabels = { admin: 'Admin Panel', patient: 'Patient Portal', hospital: 'Hospital Panel' };
+const roleLabels = {
+  admin:    'Admin Panel',
+  patient:  'Patient Portal',
+  hospital: 'Hospital Panel',
+};
 
 const Sidebar = ({ onClose }) => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const items = SIDEBAR_ITEMS[user?.role] || [];
 
-  const handleLogout = () => {
-    logout();
-    navigate('/login');
-  };
+  const handleLogout = () => { logout(); navigate('/login'); };
 
   return (
-    <aside className="w-64 h-full bg-white border-r border-slate-200 flex flex-col">
-      {/* Logo */}
-      <div className={`p-6 bg-gradient-to-r ${roleColors[user?.role]} text-white`}>
-        <div className="flex items-center gap-2 mb-1">
-          <Heart size={22} className="fill-white" />
-          <span className="text-xl font-bold tracking-tight">CareSetu</span>
+    <aside className="cs-sidebar" style={{ width: '15rem', height: '100%', display: 'flex', flexDirection: 'column' }}>
+
+      {/* ── Logo ── */}
+      <div className="cs-sidebar-logo">
+        <div style={{ display: 'flex', alignItems: 'center', gap: '.5rem' }}>
+          <div style={{ width: '1.875rem', height: '1.875rem', borderRadius: '8px', background: roleGradient[user?.role], display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <Heart size={15} style={{ fill: '#fff', color: '#fff' }} />
+          </div>
+          <span style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--text-primary)', letterSpacing: '-.01em' }}>CareSetu</span>
         </div>
-        <p className="text-xs text-white/80 font-medium">{roleLabels[user?.role]}</p>
+        <p style={{ fontSize: '.6875rem', color: 'var(--text-faint)', marginTop: '.25rem', fontWeight: 500 }}>{roleLabels[user?.role]}</p>
       </div>
 
-      {/* User Info */}
-      <div className="px-4 py-4 border-b border-slate-100">
-        <div className="flex items-center gap-3">
-          <div className={`w-9 h-9 rounded-full bg-gradient-to-br ${roleColors[user?.role]} flex items-center justify-center text-white font-bold text-sm`}>
+      {/* ── User ── */}
+      <div className="cs-sidebar-user">
+        <div style={{ display: 'flex', alignItems: 'center', gap: '.625rem' }}>
+          <div style={{ width: '1.875rem', height: '1.875rem', borderRadius: '50%', background: roleGradient[user?.role], display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 700, fontSize: '.75rem', flexShrink: 0 }}>
             {user?.name?.[0]?.toUpperCase()}
           </div>
-          <div className="min-w-0">
-            <p className="text-sm font-semibold text-slate-800 truncate">{user?.name}</p>
-            <p className="text-xs text-slate-500 truncate">{user?.email}</p>
+          <div style={{ minWidth: 0 }}>
+            <p style={{ fontSize: '.8125rem', fontWeight: 600, color: 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{user?.name}</p>
+            <p style={{ fontSize: '.6875rem', color: 'var(--text-faint)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{user?.email}</p>
           </div>
         </div>
       </div>
 
-      {/* Navigation */}
-      <nav className="flex-1 px-3 py-4 overflow-y-auto space-y-1">
+      {/* ── Nav ── */}
+      <nav style={{ flex: 1, padding: '.5rem .625rem', overflowY: 'auto' }}>
+        <p style={{ fontSize: '.625rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.08em', color: 'var(--text-faint)', padding: '.5rem .5rem .25rem', marginBottom: '.25rem' }}>Menu</p>
         {items.map(({ label, to, icon: Icon }) => (
           <NavLink
             key={to}
             to={to}
             onClick={onClose}
-            className={({ isActive }) =>
-              `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
-                isActive
-                  ? 'bg-blue-50 text-blue-700 font-semibold'
-                  : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
-              }`
-            }
+            className={({ isActive }) => `cs-nav-link ${isActive ? 'active' : ''}`}
+            style={{ marginBottom: '.125rem' }}
           >
-            {({ isActive }) => (
-              <>
-                <Icon size={18} className={isActive ? 'text-blue-600' : 'text-slate-400'} />
-                <span className="flex-1">{label}</span>
-                {isActive && <ChevronRight size={14} className="text-blue-400" />}
-              </>
-            )}
+            <Icon size={15} />
+            <span>{label}</span>
           </NavLink>
         ))}
       </nav>
 
-      {/* Logout */}
-      <div className="p-3 border-t border-slate-100">
+      {/* ── Logout ── */}
+      <div style={{ padding: '.625rem', borderTop: '1px solid var(--border)' }}>
         <button
           onClick={handleLogout}
-          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-red-600 hover:bg-red-50 transition-colors"
+          style={{ display: 'flex', alignItems: 'center', gap: '.5rem', width: '100%', padding: '.5rem .75rem', borderRadius: 'var(--radius)', border: 'none', background: 'transparent', color: 'var(--danger)', fontSize: '.8125rem', fontWeight: 600, cursor: 'pointer', transition: 'background .15s' }}
+          onMouseEnter={e => e.currentTarget.style.background = 'var(--danger-light)'}
+          onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
         >
-          <LogOut size={18} />
+          <LogOut size={14} />
           Sign Out
         </button>
       </div>

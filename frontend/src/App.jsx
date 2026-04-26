@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider } from './contexts/AuthContext';
+import { ThemeProvider } from './contexts/ThemeContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import DashboardLayout from './layouts/DashboardLayout';
 
@@ -29,6 +30,7 @@ import UploadReportPage from './pages/hospital/UploadReportPage';
 import AddTreatmentPage from './pages/hospital/AddTreatmentPage';
 
 const App = () => (
+  <ThemeProvider>
   <AuthProvider>
     <BrowserRouter>
       <Toaster position="top-right" toastOptions={{ duration: 3000, style: { fontFamily: 'Inter, sans-serif', fontSize: '14px' } }} />
@@ -78,6 +80,7 @@ const App = () => (
       </Routes>
     </BrowserRouter>
   </AuthProvider>
+  </ThemeProvider>
 );
 
 export default App;

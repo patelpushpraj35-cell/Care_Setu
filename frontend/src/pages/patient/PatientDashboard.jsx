@@ -5,115 +5,120 @@ import Badge from '../../components/ui/Badge';
 import { Spinner } from '../../components/ui/Spinner';
 import { FileText, Activity, User, Droplets, Phone, MapPin } from 'lucide-react';
 
-const formatDate = (d) => new Date(d).toLocaleDateString('en-IN', { dateStyle: 'medium' });
+const formatDate = d => new Date(d).toLocaleDateString('en-IN', { dateStyle: 'medium' });
 
 const PatientDashboard = () => {
-  const [data, setData] = useState(null);
+  const [data,    setData]    = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    patientService.getDashboard().then((r) => setData(r.data.data)).finally(() => setLoading(false));
+    patientService.getDashboard().then(r => setData(r.data.data)).finally(() => setLoading(false));
   }, []);
 
-  if (loading) return <div className="flex justify-center pt-20"><Spinner size="lg" /></div>;
+  if (loading) return <div style={{ display: 'flex', justifyContent: 'center', paddingTop: '5rem' }}><Spinner size="lg" /></div>;
 
   const { user, profile, recentReports, recentTreatments } = data || {};
 
   return (
-    <div className="space-y-6">
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+
       {/* Welcome Banner */}
-      <div className="bg-gradient-to-r from-blue-600 to-cyan-500 rounded-2xl p-6 text-white">
-        <div className="flex items-start justify-between gap-4">
+      <div className="cs-banner-blue">
+        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '1rem' }}>
           <div>
-            <h1 className="text-2xl font-bold">Welcome, {user?.name?.split(' ')[0]}! 👋</h1>
-            <p className="text-blue-100 mt-1 text-sm">Your health dashboard is ready</p>
+            <h1 style={{ fontSize: '1.375rem', fontWeight: 800, color: '#fff', marginBottom: '.25rem' }}>
+              Welcome, {user?.name?.split(' ')[0]}! 👋
+            </h1>
+            <p style={{ color: 'rgba(255,255,255,.7)', fontSize: '.8125rem' }}>Your health dashboard is ready</p>
             {profile?.bloodGroup && (
-              <div className="flex items-center gap-2 mt-3">
-                <span className="bg-white/20 px-3 py-1 rounded-full text-sm font-semibold flex items-center gap-1">
-                  <Droplets size={14} /> {profile.bloodGroup}
+              <div style={{ marginTop: '.75rem' }}>
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '.375rem', background: 'rgba(255,255,255,.2)', padding: '.25rem .75rem', borderRadius: '99px', fontSize: '.75rem', fontWeight: 700, color: '#fff' }}>
+                  <Droplets size={12} /> {profile.bloodGroup}
                 </span>
               </div>
             )}
           </div>
-          <div className="w-16 h-16 rounded-full bg-white/20 flex items-center justify-center text-3xl font-bold">
+          <div style={{ width: '3rem', height: '3rem', borderRadius: '50%', background: 'rgba(255,255,255,.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.25rem', fontWeight: 800, color: '#fff', flexShrink: 0 }}>
             {user?.name?.[0]}
           </div>
         </div>
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <StatCard title="My Reports" value={recentReports?.length ?? 0} icon={FileText} color="blue" />
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(160px,1fr))', gap: '1rem' }}>
+        <StatCard title="My Reports"    value={recentReports?.length    ?? 0} icon={FileText} color="blue"  />
         <StatCard title="My Treatments" value={recentTreatments?.length ?? 0} icon={Activity} color="green" />
       </div>
 
       {/* Profile Summary */}
       {profile && (
-        <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-5">
-          <h2 className="font-semibold text-slate-800 mb-3 flex items-center gap-2"><User size={16} />Profile Summary</h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
-            <div className="bg-slate-50 rounded-lg p-3">
-              <p className="text-xs text-slate-500 mb-1">Mobile</p>
-              <p className="font-semibold flex items-center gap-1"><Phone size={12} />{profile.mobileNumber || '—'}</p>
-            </div>
-            <div className="bg-slate-50 rounded-lg p-3">
-              <p className="text-xs text-slate-500 mb-1">Aadhaar</p>
-              <p className="font-semibold text-xs">{profile.aadhaarMasked || 'Not provided'}</p>
-            </div>
-            <div className="bg-slate-50 rounded-lg p-3">
-              <p className="text-xs text-slate-500 mb-1">City</p>
-              <p className="font-semibold flex items-center gap-1"><MapPin size={12} />{profile.address?.city || '—'}</p>
-            </div>
-            <div className="bg-slate-50 rounded-lg p-3">
-              <p className="text-xs text-slate-500 mb-1">Conditions</p>
-              <p className="font-semibold">{profile.medicalHistory?.length || 0} recorded</p>
-            </div>
+        <div className="cs-card" style={{ padding: 0, overflow: 'hidden' }}>
+          <div className="cs-card-header">
+            <span className="cs-card-title"><User size={15} />Profile Summary</span>
           </div>
-          {profile.medicalHistory?.length > 0 && (
-            <div className="mt-3 flex flex-wrap gap-2">
-              {profile.medicalHistory.map((c) => <Badge key={c} variant="blue">{c}</Badge>)}
+          <div style={{ padding: '1rem 1.25rem' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(130px,1fr))', gap: '.75rem' }}>
+              {[
+                { label: 'Mobile', icon: Phone, value: profile.mobileNumber || '—' },
+                { label: 'Aadhaar', icon: null, value: profile.aadhaarMasked || 'Not provided' },
+                { label: 'City', icon: MapPin, value: profile.address?.city || '—' },
+                { label: 'Conditions', icon: null, value: `${profile.medicalHistory?.length || 0} recorded` },
+              ].map(item => (
+                <div key={item.label} style={{ background: 'var(--bg-subtle)', borderRadius: 'var(--radius)', padding: '.75rem' }}>
+                  <p style={{ fontSize: '.625rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.05em', color: 'var(--text-faint)', marginBottom: '.25rem' }}>{item.label}</p>
+                  <p style={{ fontSize: '.8125rem', fontWeight: 600, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '.25rem' }}>
+                    {item.icon && <item.icon size={11} />}
+                    {item.value}
+                  </p>
+                </div>
+              ))}
             </div>
-          )}
+            {profile.medicalHistory?.length > 0 && (
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '.375rem', marginTop: '.75rem' }}>
+                {profile.medicalHistory.map(c => <Badge key={c} variant="blue">{c}</Badge>)}
+              </div>
+            )}
+          </div>
         </div>
       )}
 
       {/* Recent Reports */}
-      <div className="bg-white rounded-xl border border-slate-200 shadow-sm">
-        <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
-          <h2 className="font-semibold text-slate-800 flex items-center gap-2"><FileText size={16} />Recent Reports</h2>
+      <div className="cs-card" style={{ padding: 0, overflow: 'hidden' }}>
+        <div className="cs-card-header">
+          <span className="cs-card-title"><FileText size={15} />Recent Reports</span>
         </div>
-        <div className="divide-y divide-slate-100">
-          {recentReports?.length ? recentReports.map((r) => (
-            <div key={r._id} className="px-5 py-3 flex items-center justify-between gap-4">
+        <div>
+          {recentReports?.length ? recentReports.map(r => (
+            <div key={r._id} style={{ padding: '.75rem 1.25rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem', borderBottom: '1px solid var(--border-subtle)' }}>
               <div>
-                <p className="text-sm font-medium text-slate-800">{r.description}</p>
-                <p className="text-xs text-slate-500">By {r.hospitalId?.name}</p>
+                <p style={{ fontSize: '.8125rem', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '.125rem' }}>{r.description}</p>
+                <p style={{ fontSize: '.75rem', color: 'var(--text-muted)' }}>By {r.hospitalId?.name}</p>
               </div>
-              <div className="text-right flex-shrink-0">
+              <div style={{ textAlign: 'right', flexShrink: 0 }}>
                 <Badge variant="blue">{r.reportType?.replace('_', ' ')}</Badge>
-                <p className="text-xs text-slate-400 mt-1">{formatDate(r.createdAt)}</p>
+                <p style={{ fontSize: '.6875rem', color: 'var(--text-faint)', marginTop: '.25rem' }}>{formatDate(r.createdAt)}</p>
               </div>
             </div>
-          )) : <p className="text-center py-8 text-slate-400 text-sm">No reports yet.</p>}
+          )) : <div className="cs-empty">No reports yet.</div>}
         </div>
       </div>
 
       {/* Recent Treatments */}
-      <div className="bg-white rounded-xl border border-slate-200 shadow-sm">
-        <div className="px-5 py-4 border-b border-slate-100">
-          <h2 className="font-semibold text-slate-800 flex items-center gap-2"><Activity size={16} />Recent Treatments</h2>
+      <div className="cs-card" style={{ padding: 0, overflow: 'hidden' }}>
+        <div className="cs-card-header">
+          <span className="cs-card-title"><Activity size={15} />Recent Treatments</span>
         </div>
-        <div className="divide-y divide-slate-100">
-          {recentTreatments?.length ? recentTreatments.map((t) => (
-            <div key={t._id} className="px-5 py-3">
-              <div className="flex items-center justify-between mb-1">
-                <p className="text-sm font-semibold text-slate-800">{t.diagnosis}</p>
+        <div>
+          {recentTreatments?.length ? recentTreatments.map(t => (
+            <div key={t._id} style={{ padding: '.75rem 1.25rem', borderBottom: '1px solid var(--border-subtle)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '.25rem' }}>
+                <p style={{ fontSize: '.8125rem', fontWeight: 600, color: 'var(--text-primary)' }}>{t.diagnosis}</p>
                 <Badge variant={t.status === 'active' ? 'green' : 'default'}>{t.status}</Badge>
               </div>
-              <p className="text-xs text-slate-500">Dr. {t.doctorName} · {t.hospitalId?.name}</p>
-              <p className="text-xs text-slate-400 mt-1">{formatDate(t.createdAt)}</p>
+              <p style={{ fontSize: '.75rem', color: 'var(--text-muted)' }}>Dr. {t.doctorName} · {t.hospitalId?.name}</p>
+              <p style={{ fontSize: '.6875rem', color: 'var(--text-faint)', marginTop: '.25rem' }}>{formatDate(t.createdAt)}</p>
             </div>
-          )) : <p className="text-center py-8 text-slate-400 text-sm">No treatments yet.</p>}
+          )) : <div className="cs-empty">No treatments yet.</div>}
         </div>
       </div>
     </div>
