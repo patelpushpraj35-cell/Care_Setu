@@ -1,39 +1,28 @@
 const mongoose = require('mongoose');
+const { MongoMemoryServer } = require('mongodb-memory-server');
 
 /**
- * Connect to MongoDB Atlas with retry logic
+ * Connect to In-Memory MongoDB automatically
+ * - Perfect for demos/portfolios when you don't want to configure Atlas.
+ * - Auto-seeds the database on startup.
  */
 const connectDB = async () => {
-  const uri = process.env.MONGO_URI;
+  try {
+    console.log('🔄 Starting In-Memory MongoDB...');
+    const mongod = await MongoMemoryServer.create();
+    const uri = mongod.getUri();
 
-  if (!uri || uri.includes('localhost') || uri.includes('127.0.0.1')) {
-    console.error('❌  MONGO_URI is pointing to localhost. Please use a MongoDB Atlas connection string.');
-    console.error('   Get a free cluster at: https://cloud.mongodb.com');
+    await mongoose.connect(uri, {
+      maxPoolSize: 10,
+    });
+    
+    console.log(`✅ In-Memory MongoDB Connected: ${uri}`);
+    
+    // Auto-seed the memory database
+    require('../seed_memory');
+  } catch (error) {
+    console.error(`❌ In-Memory MongoDB Error: ${error.message}`);
     process.exit(1);
-  }
-
-  const options = {
-    serverSelectionTimeoutMS: 10000,
-    socketTimeoutMS: 45000,
-    connectTimeoutMS: 10000,
-    maxPoolSize: 10,
-  };
-
-  let retries = 3;
-  while (retries > 0) {
-    try {
-      const conn = await mongoose.connect(uri, options);
-      console.log(`✅  MongoDB Atlas Connected: ${conn.connection.host}`);
-      return;
-    } catch (error) {
-      retries -= 1;
-      if (retries === 0) {
-        console.error(`❌  MongoDB Connection Failed after 3 attempts: ${error.message}`);
-        process.exit(1);
-      }
-      console.warn(`⚠️   MongoDB connection attempt failed. Retrying... (${retries} left)`);
-      await new Promise(r => setTimeout(r, 3000));
-    }
   }
 };
 
