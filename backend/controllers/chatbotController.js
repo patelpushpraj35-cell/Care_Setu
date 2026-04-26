@@ -23,7 +23,7 @@ Always:
 - Keep responses EXTREMELY short, sweet, and to the point (maximum 3-4 short bullet points or 2 brief paragraphs)
 - Ensure all essential details are still included despite the brevity
 - Format clearly with bullet points where useful
-- CRITICAL: Your default language is Hindi. ALWAYS respond in Hindi (Devanagari script), UNLESS the user explicitly types their entire question in English.`;
+- CRITICAL: Your default language is English. ALWAYS respond in English, UNLESS the user explicitly types their entire question in Hindi.`;
 
 /**
  * @route   POST /api/chatbot/chat
