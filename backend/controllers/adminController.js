@@ -1,92 +1,106 @@
 const { db } = require('../config/firebase');
-const { collection, query, where, getDocs, getDoc, doc, updateDoc, deleteDoc, orderBy, limit } = require('firebase/firestore');
+const { collection, query, where, getDocs, getDoc, doc, updateDoc, addDoc, orderBy } = require('firebase/firestore');
+const bcrypt = require('bcryptjs');
 
 /**
- * @route   GET /api/admin/stats
- * @desc    Get system-wide statistics
- * @access  Admin
+ * @route   GET /api/admin/dashboard
  */
-const getStats = async (req, res) => {
+const getDashboard = async (req, res) => {
   try {
     const usersSnapshot = await getDocs(collection(db, 'users'));
     const reportsSnapshot = await getDocs(collection(db, 'reports'));
-    const hospitalsSnapshot = await getDocs(query(collection(db, 'users'), where('role', '==', 'hospital')));
-
-    const stats = {
-      totalPatients: usersSnapshot.docs.filter(d => d.data().role === 'patient').length,
-      totalHospitals: hospitalsSnapshot.size,
-      totalReports: reportsSnapshot.size,
-      activeUsers: usersSnapshot.docs.filter(d => d.data().isActive).length
-    };
-
-    res.json({ success: true, data: stats });
+    res.json({
+      success: true,
+      data: {
+        totalPatients: usersSnapshot.docs.filter(d => d.data().role === 'patient').length,
+        totalHospitals: usersSnapshot.docs.filter(d => d.data().role === 'hospital').length,
+        totalReports: reportsSnapshot.size
+      }
+    });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
 };
 
 /**
- * @route   GET /api/admin/users
- * @desc    Get all users with filtering
- * @access  Admin
+ * @route   POST /api/admin/hospitals/register
  */
-const getUsers = async (req, res) => {
+const registerHospital = async (req, res) => {
   try {
-    const { role } = req.query;
-    let q = collection(db, 'users');
-    if (role) {
-      q = query(q, where('role', '==', role));
-    }
-
-    const snapshot = await getDocs(q);
-    const users = snapshot.docs.map(d => ({ _id: d.id, ...d.data() }));
-
-    res.json({ success: true, data: users });
+    const { name, email, password } = req.body;
+    const salt = await bcrypt.genSalt(12);
+    const hashedPassword = await bcrypt.hash(password, salt);
+    
+    const newUser = { name, email, password: hashedPassword, role: 'hospital', isActive: true, createdAt: new Date().toISOString() };
+    const docRef = await addDoc(collection(db, 'users'), newUser);
+    
+    await setDoc(doc(db, 'hospitalProfiles', docRef.id), { userId: docRef.id, hospitalName: name, email, createdAt: new Date().toISOString() });
+    
+    res.status(201).json({ success: true, data: { _id: docRef.id, ...newUser } });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
 };
 
 /**
- * @route   PATCH /api/admin/users/:id/status
- * @desc    Activate/Deactivate user account
- * @access  Admin
+ * @route   GET /api/admin/hospitals
  */
-const toggleUserStatus = async (req, res) => {
+const getAllHospitals = async (req, res) => {
+  try {
+    const q = query(collection(db, 'users'), where('role', '==', 'hospital'));
+    const snapshot = await getDocs(q);
+    res.json({ success: true, data: snapshot.docs.map(d => ({ _id: d.id, ...d.data() })) });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+/**
+ * @route   GET /api/admin/patients
+ */
+const getAllPatients = async (req, res) => {
+  try {
+    const q = query(collection(db, 'users'), where('role', '==', 'patient'));
+    const snapshot = await getDocs(q);
+    res.json({ success: true, data: snapshot.docs.map(d => ({ _id: d.id, ...d.data() })) });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+/**
+ * @route   GET /api/admin/patients/:patientId/details
+ */
+const getPatientDetails = async (req, res) => {
+  try {
+    const { patientId } = req.params;
+    const [userDoc, profileDoc] = await Promise.all([
+      getDoc(doc(db, 'users', patientId)),
+      getDoc(doc(db, 'patientProfiles', patientId))
+    ]);
+    res.json({ success: true, data: { user: userDoc.data(), profile: profileDoc.data() } });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+/**
+ * @route   PATCH /api/admin/hospitals/:id/toggle
+ */
+const toggleHospitalStatus = async (req, res) => {
   try {
     const { id } = req.params;
-    const { isActive } = req.body;
-
     const userRef = doc(db, 'users', id);
     const userDoc = await getDoc(userRef);
-
-    if (!userDoc.exists()) {
-      return res.status(404).json({ success: false, message: 'User not found.' });
-    }
-
-    await updateDoc(userRef, { isActive });
-
-    res.json({ success: true, message: `User account ${isActive ? 'activated' : 'deactivated'} successfully.` });
+    const newStatus = !userDoc.data().isActive;
+    await updateDoc(userRef, { isActive: newStatus });
+    res.json({ success: true, message: `Status updated to ${newStatus}` });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
 };
 
-/**
- * @route   GET /api/admin/logs
- * @desc    Get system activity logs
- * @access  Admin
- */
-const getActivityLogs = async (req, res) => {
-  try {
-    const q = query(collection(db, 'activityLogs'), orderBy('createdAt', 'desc'), limit(50));
-    const snapshot = await getDocs(q);
-    const logs = snapshot.docs.map(d => ({ _id: d.id, ...d.data() }));
-
-    res.json({ success: true, data: logs });
-  } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
-  }
+module.exports = { 
+  getDashboard, registerHospital, getAllHospitals, 
+  getAllPatients, getPatientDetails, toggleHospitalStatus 
 };
-
-module.exports = { getStats, getUsers, toggleUserStatus, getActivityLogs };

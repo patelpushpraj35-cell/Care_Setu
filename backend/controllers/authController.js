@@ -114,4 +114,4 @@ const getMe = async (req, res) => {
   }
 };
 
-module.exports = { register, login, getMe };
+module.exports = { registerPatient: register, login, getMe };
