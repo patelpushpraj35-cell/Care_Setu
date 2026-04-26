@@ -32,19 +32,42 @@ const getDashboard = async (req, res) => {
 const getPatientByQR = async (req, res) => {
   try {
     const { patientId } = req.params;
-    const userDoc = await getDoc(doc(db, 'users', patientId));
-    if (!userDoc.exists()) return res.status(404).json({ success: false, message: 'Patient not found.' });
+    let actualPatientId = patientId;
+    let userDoc = await getDoc(doc(db, 'users', patientId));
+    
+    // Fallback: Search by Email or Mobile
+    if (!userDoc.exists()) {
+      const qEmail = query(collection(db, 'users'), where('email', '==', patientId), where('role', '==', 'patient'));
+      const emailSnap = await getDocs(qEmail);
+      if (!emailSnap.empty) {
+        userDoc = emailSnap.docs[0];
+        actualPatientId = userDoc.id;
+      } else {
+        const qMobile = query(collection(db, 'patientProfiles'), where('mobileNumber', '==', patientId));
+        const mobileSnap = await getDocs(qMobile);
+        if (!mobileSnap.empty) {
+          actualPatientId = mobileSnap.docs[0].id;
+          userDoc = await getDoc(doc(db, 'users', actualPatientId));
+        } else {
+          return res.status(404).json({ success: false, message: 'Patient not found by ID, Email, or Mobile.' });
+        }
+      }
+    }
+
+    if (userDoc.data()?.role !== 'patient') {
+      return res.status(404).json({ success: false, message: 'User found is not a patient.' });
+    }
     
     const [profileDoc, reportsSnap, treatmentsSnap] = await Promise.all([
-      getDoc(doc(db, 'patientProfiles', patientId)),
-      getDocs(query(collection(db, 'reports'), where('patientId', '==', patientId))),
-      getDocs(query(collection(db, 'treatments'), where('patientId', '==', patientId)))
+      getDoc(doc(db, 'patientProfiles', actualPatientId)),
+      getDocs(query(collection(db, 'reports'), where('patientId', '==', actualPatientId))),
+      getDocs(query(collection(db, 'treatments'), where('patientId', '==', actualPatientId)))
     ]);
 
     res.json({
       success: true,
       data: {
-        user: { _id: userDoc.id, ...userDoc.data() },
+        user: { _id: actualPatientId, ...userDoc.data() },
         profile: profileDoc.exists() ? profileDoc.data() : null,
         reports: reportsSnap.docs.map(d => ({ _id: d.id, ...d.data() })),
         treatments: treatmentsSnap.docs.map(d => ({ _id: d.id, ...d.data() }))

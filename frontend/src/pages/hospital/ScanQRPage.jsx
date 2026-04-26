@@ -79,7 +79,7 @@ const ScanQRPage = () => {
             <div className="flex gap-2">
               <input
                 className="flex-1 rounded-lg border border-slate-300 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Enter Patient ID manually..."
+                placeholder="Enter Patient ID, Email, or Mobile..."
                 value={manualId}
                 onChange={(e) => setManualId(e.target.value)}
                 onKeyDown={(e) => { if (e.key === 'Enter') fetchPatient(manualId); }}
