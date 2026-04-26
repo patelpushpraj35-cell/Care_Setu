@@ -95,8 +95,11 @@ const login = async (req, res) => {
       data: { token, user },
     });
   } catch (error) {
-    console.error('Login Error:', error);
-    res.status(500).json({ success: false, message: error.message });
+    console.error('Detailed Login Error:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: `Backend Error: ${error.message}. Please check if Firestore is enabled and rules are updated.` 
+    });
   }
 };
 
